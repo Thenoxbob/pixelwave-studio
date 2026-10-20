@@ -15,14 +15,14 @@ Projet fil rouge BTS SIO - PixelWave Studio
 
 Le maquettage porte sur le **portail joueurs**, l'application web du système d'information : compte joueur, jeux possédés et clés d'activation, boutique, actualités et signalement de bug.
 
-- **Projet Figma :** _lien à ajouter_
-- **Prototype interactif :** _lien à ajouter_
+- **Projet Figma :** [PixelWave · Portail joueurs](https://www.figma.com/design/GZ0yvfIfQqDKJJsB0gcl9m/PixelWave-%C2%B7-Portail-joueurs)
+- **Prototype interactif :** [Lancer le prototype](https://www.figma.com/proto/GZ0yvfIfQqDKJJsB0gcl9m/PixelWave-%C2%B7-Portail-joueurs?node-id=1-165&starting-point-node-id=1-165&scaling=scale-down-width) (3 parcours : achat d'un DLC, récupération d'une clé, signalement et suivi d'un bug)
 
 Le projet Figma contient une page par étape :
 
 1. Moodboard
 2. Arborescence
-3. Charte graphique
+3. Charte graphique (variables de couleur, styles de texte, composants Bouton, Badge, Champ et Bloc clé)
 4. Wireframes
 5. Maquettes graphiques et prototype
 

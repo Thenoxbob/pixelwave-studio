@@ -8,7 +8,7 @@
 - **Testeur :** (prénom ou initiales, formation, joue-t-il aux jeux vidéo ?)
 - **A-t-il vu le projet avant ?** Non
 - **Support :** prototype Figma en mode Présentation, sur ordinateur
-- **Lien du prototype :** _lien à ajouter_
+- **Lien du prototype :** https://www.figma.com/proto/GZ0yvfIfQqDKJJsB0gcl9m/PixelWave-%C2%B7-Portail-joueurs?node-id=1-165&starting-point-node-id=1-165&scaling=scale-down-width
 - **Durée totale :**
 
 ## Résultats des missions
