@@ -1,58 +1,56 @@
-# Livrable 7 · Conception de l'API REST
+# Livrable 7 : conception de l'API REST
 
-## 1. Pourquoi une API dans le portail
+## 1. Pourquoi une API
 
-Le portail est une application PHP qui affiche des pages HTML. En plus, il expose une **API REST** (`/api/v1`) pour que d'autres composants du système d'information puissent utiliser les mêmes données sans accéder à la base :
+Le portail est une application PHP qui renvoie des pages HTML. En plus de ça, j'ai prévu une API REST (`/api/v1`) pour que d'autres programmes du système d'information puissent utiliser les mêmes données sans aller directement dans la base :
 
-| Client de l'API | Usage |
-|---|---|
-| Le portail lui-même (JavaScript) | révéler une clé sans recharger la page |
-| Launcher PixelWave (application PC) | afficher la bibliothèque du joueur, ses clés |
-| Bot Discord de la communauté | lister les actualités, ouvrir un ticket depuis Discord |
-| Outils du support / supervision | file des tickets, contrôle de santé du service |
+- le JavaScript du portail, pour afficher une clé sans recharger la page ;
+- le launcher PixelWave (application PC), pour montrer au joueur ses jeux et ses clés ;
+- le bot Discord de la communauté, pour afficher les actualités ou ouvrir un ticket depuis Discord ;
+- les outils du support et la supervision, pour la file des tickets et pour vérifier que le service marche.
 
-La base de données reste dans la DMZ, joignable en local uniquement : **l'API est le seul point d'entrée réseau vers les données**.
+La base de données est dans la DMZ et n'accepte que les connexions locales. L'API est donc la seule façon d'accéder aux données depuis le réseau.
 
-## 2. Principes retenus
+## 2. Les règles que j'ai suivies
 
-- **Ressources au pluriel, sans verbe** : `/produits`, `/tickets`, `/moi/commandes`.
-- **Méthode HTTP = action** : `GET` lire, `POST` créer, `PATCH` modifier partiellement, `DELETE` supprimer. `PUT` n'est pas utilisé : aucune ressource n'est remplacée entièrement par un client.
-- **Format** : JSON en UTF-8, dates `AAAA-MM-JJ HH:MM:SS`, montants en nombre décimal.
-- **Version dans l'URL** (`/api/v1`) : une évolution incompatible deviendra `/api/v2` sans casser le launcher déjà installé.
-- **Identifiants** : numériques pour le catalogue, **référence lisible** pour les tickets (`BUG-2026-0007`), plus parlante pour le joueur.
-- **Ressources « moi »** : `/moi/...` désigne toujours l'utilisateur authentifié ; impossible de demander la bibliothèque d'un autre joueur en changeant un identifiant dans l'URL.
+- Les noms de ressources sont au pluriel et sans verbe : `/produits`, `/tickets`, `/moi/commandes`.
+- La méthode HTTP donne l'action : `GET` pour lire, `POST` pour créer, `PATCH` pour modifier une partie, `DELETE` pour supprimer. Je n'utilise pas `PUT`, parce qu'aucun client n'a besoin de remplacer une ressource en entier.
+- Tout est en JSON (UTF-8). Les dates sont au format `AAAA-MM-JJ HH:MM:SS` et les prix sont des nombres décimaux.
+- La version est dans l'URL (`/api/v1`). Si un jour je dois faire un changement incompatible, je créerai `/api/v2` sans casser le launcher déjà installé chez les joueurs.
+- Les produits ont un identifiant numérique, mais les tickets utilisent leur référence (`BUG-2026-0007`), qui parle plus au joueur.
+- `/moi/...` désigne toujours l'utilisateur connecté. Du coup, on ne peut pas voir la bibliothèque de quelqu'un d'autre juste en changeant un numéro dans l'URL.
 
-## 3. Ressources et routes
+## 3. Les routes
 
-| Méthode | Route | Rôle | Accès |
+| Méthode | Route | Ce qu'elle fait | Qui peut l'utiliser |
 |---|---|---|---|
-| GET | `/api/v1/sante` | état du service et de la base (supervision) | public |
-| POST | `/api/v1/auth/jetons` | échanger e-mail + mot de passe contre un jeton | public |
-| DELETE | `/api/v1/auth/jetons/courant` | révoquer le jeton utilisé | authentifié |
-| GET | `/api/v1/plateformes` | liste des plateformes | public |
-| GET | `/api/v1/produits` | catalogue (filtres `type`, `plateforme`, `q`, `tri`) | public |
-| GET | `/api/v1/produits/{id}` | fiche produit, offres, DLC | public |
-| GET | `/api/v1/actualites` | actualités publiées (`limite`) | public |
-| GET | `/api/v1/actualites/{id}` | une actualité | public |
-| GET | `/api/v1/moi` | profil de l'utilisateur connecté | authentifié |
-| GET | `/api/v1/moi/bibliotheque` | jeux possédés et clés (masquées si non révélées) | authentifié |
-| POST | `/api/v1/moi/cles/{id}/revelation` | révéler une clé (action tracée) | propriétaire de la clé |
-| GET | `/api/v1/moi/panier` | contenu du panier | authentifié |
-| POST | `/api/v1/moi/panier` | ajouter un produit pour une plateforme | authentifié |
-| DELETE | `/api/v1/moi/panier/{id}` | retirer une ligne | propriétaire de la ligne |
-| GET | `/api/v1/moi/commandes` | historique des commandes | authentifié |
-| POST | `/api/v1/moi/commandes` | valider le panier, attribuer les clés | authentifié |
-| GET | `/api/v1/tickets` | ses tickets (joueur) ou toute la file (support, filtre `statut`) | authentifié |
-| POST | `/api/v1/tickets` | signaler un bug | authentifié |
-| GET | `/api/v1/tickets/{reference}` | détail, messages, historique | auteur ou support |
-| POST | `/api/v1/tickets/{reference}/messages` | ajouter un message | auteur ou support |
-| PATCH | `/api/v1/tickets/{reference}` | statut, priorité, technicien | support, admin |
+| GET | `/api/v1/sante` | indique si le service et la base répondent | tout le monde |
+| POST | `/api/v1/auth/jetons` | donne un jeton contre un e-mail et un mot de passe | tout le monde |
+| DELETE | `/api/v1/auth/jetons/courant` | révoque le jeton utilisé | connecté |
+| GET | `/api/v1/plateformes` | liste des plateformes | tout le monde |
+| GET | `/api/v1/produits` | catalogue, avec les filtres `type`, `plateforme`, `q` et `tri` | tout le monde |
+| GET | `/api/v1/produits/{id}` | fiche d'un produit avec ses plateformes et ses DLC | tout le monde |
+| GET | `/api/v1/actualites` | actualités publiées (paramètre `limite`) | tout le monde |
+| GET | `/api/v1/actualites/{id}` | une actualité | tout le monde |
+| GET | `/api/v1/moi` | profil de l'utilisateur connecté | connecté |
+| GET | `/api/v1/moi/bibliotheque` | ses jeux et ses clés (masquées si pas encore affichées) | connecté |
+| POST | `/api/v1/moi/cles/{id}/revelation` | affiche une clé et enregistre la date | propriétaire de la clé |
+| GET | `/api/v1/moi/panier` | contenu du panier | connecté |
+| POST | `/api/v1/moi/panier` | ajoute un produit pour une plateforme | connecté |
+| DELETE | `/api/v1/moi/panier/{id}` | enlève une ligne du panier | propriétaire de la ligne |
+| GET | `/api/v1/moi/commandes` | historique des commandes | connecté |
+| POST | `/api/v1/moi/commandes` | valide le panier et attribue les clés | connecté |
+| GET | `/api/v1/tickets` | ses tickets (joueur) ou toute la file (support, filtre `statut`) | connecté |
+| POST | `/api/v1/tickets` | signale un bug | connecté |
+| GET | `/api/v1/tickets/{reference}` | détail, messages et historique d'un ticket | auteur du ticket ou support |
+| POST | `/api/v1/tickets/{reference}/messages` | ajoute un message | auteur du ticket ou support |
+| PATCH | `/api/v1/tickets/{reference}` | change le statut, la priorité ou le technicien | support et admin |
 
-**Note sur la révélation de clé** : c'est un `POST` et non un `GET`, car l'action **modifie** l'état (date de révélation enregistrée, remboursement impossible ensuite). Un `GET` doit pouvoir être répété ou mis en cache sans effet.
+Pour afficher une clé, j'ai mis un `POST` et pas un `GET`. C'est parce que l'action modifie quelque chose : la date d'affichage est enregistrée, et après ça la clé n'est plus remboursable. Un `GET` doit pouvoir être relancé ou mis en cache sans rien changer.
 
-## 4. Données échangées (exemples de ressources)
+## 4. Exemples de données échangées
 
-**Produit**
+Un produit :
 
 ```json
 { "id": 3, "type": "jeu", "titre": "Abyssal Tides", "slug": "abyssal-tides", "genre": "Exploration",
@@ -60,7 +58,7 @@ La base de données reste dans la DMZ, joignable en local uniquement : **l'API e
   "prix": { "base": 24.99, "remise_pct": 30, "final": 17.49 }, "plateformes": ["PC"] }
 ```
 
-**Ticket**
+Un ticket :
 
 ```json
 { "reference": "BUG-2026-0007", "titre": "...", "description": "...",
@@ -70,51 +68,49 @@ La base de données reste dans la DMZ, joignable en local uniquement : **l'API e
   "date_creation": "2026-11-06 14:51:47", "date_maj": "2026-11-06 14:51:47" }
 ```
 
-Aucune réponse ne contient de champ sensible : ni empreinte de mot de passe, ni empreinte de jeton, ni code de clé non révélé, ni note interne du support (pour un joueur).
+J'ai fait attention à ce qu'aucune réponse ne contienne d'information sensible : pas d'empreinte de mot de passe ou de jeton, pas de code de clé que le joueur n'a pas encore affiché, et pas de note interne du support quand c'est un joueur qui demande.
 
-## 5. Authentification et autorisations
+## 5. Authentification et droits
 
-**Authentification (qui appelle ?)**
+Pour savoir qui appelle l'API :
 
-1. Le client envoie `POST /api/v1/auth/jetons` avec e-mail et mot de passe.
-2. L'API répond un **jeton aléatoire** de 48 caractères hexadécimaux (`pw_...`), valable 90 jours. La base ne garde que son empreinte SHA-256 : une fuite de la base ne donne pas les jetons.
-3. Le client envoie ensuite `Authorization: Bearer pw_...` à chaque requête.
-4. Le joueur peut voir et révoquer ses jetons depuis « Mon compte » (ex. téléphone perdu).
+1. le client envoie son e-mail et son mot de passe à `POST /api/v1/auth/jetons` ;
+2. l'API renvoie un jeton aléatoire (`pw_` suivi de 48 caractères) valable 90 jours. En base, je ne garde que son empreinte SHA-256, donc même si la base fuit, les jetons ne sont pas récupérables ;
+3. ensuite le client ajoute `Authorization: Bearer pw_...` à chaque requête ;
+4. depuis la page « Mon compte », le joueur voit ses jetons et peut en révoquer un, par exemple s'il a perdu son téléphone.
 
-Le JavaScript du portail utilise la **session** déjà ouverte (cookie `HttpOnly`, `SameSite=Lax`) ; pour toute requête qui modifie des données, il doit alors envoyer l'en-tête `X-CSRF-Token` (protection contre les requêtes forgées depuis un autre site).
+Le JavaScript du portail, lui, utilise la session déjà ouverte (cookie `HttpOnly` et `SameSite=Lax`). Pour toutes les requêtes qui modifient des données, il doit en plus envoyer l'en-tête `X-CSRF-Token`, ce qui bloque les requêtes envoyées depuis un autre site.
 
-**Autorisations (qu'a-t-il le droit de faire ?)**
+Pour savoir ce que la personne a le droit de faire :
 
-| Profil | Droits |
-|---|---|
-| Visiteur | catalogue, actualités, santé |
-| Joueur | + son profil, sa bibliothèque, ses clés, son panier, ses commandes, ses tickets |
-| Support | + toute la file des tickets, notes internes, qualification et affectation |
-| Admin | comme le support (gestion du catalogue prévue dans une version suivante) |
+- un visiteur peut voir le catalogue, les actualités et l'état du service ;
+- un joueur peut en plus accéder à son profil, sa bibliothèque, ses clés, son panier, ses commandes et ses tickets ;
+- le support voit en plus toute la file des tickets et les notes internes, et peut qualifier et affecter un ticket ;
+- l'admin a les mêmes droits que le support pour l'instant (la gestion du catalogue viendra plus tard).
 
-Un joueur qui demande le ticket ou la clé d'un autre reçoit **404** (et non 403) : on ne confirme même pas que la ressource existe.
+Si un joueur demande le ticket ou la clé d'un autre joueur, il reçoit une erreur 404 et pas 403. Comme ça on ne lui confirme même pas que la ressource existe.
 
-**Protection contre la force brute** : 5 échecs par e-mail ou 20 par adresse IP en 15 minutes bloquent la création de jeton (**429**).
+Contre la force brute : après 5 échecs sur le même e-mail ou 20 depuis la même adresse IP en 15 minutes, la création de jeton est bloquée (erreur 429).
 
-## 6. Gestion des erreurs
+## 6. Les erreurs
 
-Toutes les erreurs ont le même format, avec un **code stable** (exploitable par un programme) et un **message** lisible, sans détail technique :
+Toutes les erreurs ont le même format. Il y a un code qui ne change pas (pour qu'un programme puisse le tester) et un message lisible, sans détail technique :
 
 ```json
 { "erreur": { "code": "donnees_invalides", "message": "Certaines données sont invalides.",
               "details": { "titre": "Entre 5 et 150 caractères." } } }
 ```
 
-| Statut | Quand | Codes d'erreur |
+| Statut | Quand | Codes possibles |
 |---|---|---|
-| 200 / 201 / 204 | succès / création / succès sans contenu | — |
+| 200, 201, 204 | succès, création, succès sans contenu | |
 | 400 | requête mal formée ou données invalides | `json_invalide`, `donnees_invalides`, `plateforme_invalide`, `panier_vide` |
-| 401 | non authentifié ou identifiants faux | `non_authentifie`, `jeton_invalide`, `identifiants_invalides` |
-| 403 | authentifié mais pas le droit | `acces_refuse`, `csrf_invalide` |
-| 404 | ressource introuvable (ou appartenant à un autre) | `introuvable`, `produit_introuvable`, `cle_introuvable`, `ticket_introuvable` |
-| 405 | méthode non prévue sur la route (en-tête `Allow`) | `methode_non_autorisee` |
+| 401 | pas connecté ou mauvais identifiants | `non_authentifie`, `jeton_invalide`, `identifiants_invalides` |
+| 403 | connecté mais pas autorisé | `acces_refuse`, `csrf_invalide` |
+| 404 | ressource introuvable, ou qui appartient à un autre | `introuvable`, `produit_introuvable`, `cle_introuvable`, `ticket_introuvable` |
+| 405 | méthode pas prévue sur cette route (l'en-tête `Allow` donne les bonnes) | `methode_non_autorisee` |
 | 409 | conflit avec l'état actuel | `stock_epuise`, `deja_possede`, `deja_dans_panier`, `ticket_clos` |
 | 429 | trop de tentatives | `trop_de_tentatives` |
-| 500 / 503 | erreur interne / base injoignable | `erreur_interne` (détail uniquement dans le journal du serveur) |
+| 500, 503 | erreur du serveur, base injoignable | `erreur_interne` (le détail est seulement dans le journal du serveur) |
 
-La documentation complète, avec un exemple de requête et de réponse pour chaque route, est le [livrable 8](L8_documentation_api.md).
+La documentation complète, avec un exemple de requête et de réponse pour chaque route, est dans le [livrable 8](L8_documentation_api.md).

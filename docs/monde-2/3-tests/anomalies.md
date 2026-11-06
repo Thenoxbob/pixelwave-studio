@@ -1,26 +1,24 @@
-# Suivi des anomalies · Campagne du 06/11/2026
+# Suivi des anomalies (campagne du 06/11/2026)
 
-Gravité : **bloquante** (une fonctionnalité est inutilisable) · **majeure** (fonctionne mal, contournement possible) · **mineure** (gêne visuelle ou de confort).
+Pour la gravité, j'ai utilisé trois niveaux : bloquante quand une fonctionnalité ne marche plus du tout, majeure quand elle marche mal mais qu'on peut contourner le problème, et mineure quand c'est un souci visuel ou de confort.
 
-Chaque anomalie est à reporter en issue GitHub avec le modèle [`anomalie.md`](../../../.github/ISSUE_TEMPLATE/anomalie.md), puis fermée par le commit de correction.
+Chaque anomalie est à reporter dans une issue GitHub avec le modèle [`anomalie.md`](../../../.github/ISSUE_TEMPLATE/anomalie.md), puis à fermer avec le commit de correction.
 
-| ID | Titre | Écran / route | Scénario | Gravité | Cause | Correction | Re-test | Statut |
-|---|---|---|---|---|---|---|---|---|
-| ANO-01 | La page « Ma bibliothèque » affiche « Warning: Array to string conversion » au lieu des jeux | `/bibliotheque` | REC-14 | **Bloquante** | La vue reçoit une variable `$contenu` (liste des jeux) qui écrasait la variable `$contenu` du gabarit commun (HTML de la page). | Variable du gabarit renommée `$corpsPage` (`View::rendre`, `layout.php`). | page affichée, 4 jeux ; tests auto OK | ✅ Corrigée |
-| ANO-02 | Les boutons des formulaires occupent toute la largeur du panneau | `/compte` | REC-01 | Mineure | Le conteneur `.formulaire` est en flexbox colonne : les enfants s'étirent par défaut. | `.formulaire > .btn:not(.btn--bloc) { align-self: flex-start }` | visuel conforme à la maquette | ✅ Corrigée |
-| ANO-03 | Cartes « Promotions en cours » de l'accueil beaucoup plus hautes que sur la maquette | `/` | REC-08 | Mineure | Même ratio d'image (4/5) pour les grilles à 4 et à 5 colonnes. | Ratio 4/3 sur l'accueil, 3/4 dans la boutique. | conforme à la maquette Figma | ✅ Corrigée |
-| ANO-04 | Blocs de clé non alignés d'une ligne à l'autre de la bibliothèque | `/bibliotheque` | REC-14 | Mineure | Largeur de colonne variable (`minmax(300px, auto)`) selon la longueur du bouton. | Colonne fixe de 340 px. | blocs alignés | ✅ Corrigée |
-| ANO-05 | Le message « Connecte-toi pour accéder à cette page. » s'affiche deux fois | `/connexion?retour=...` | REC-07 | Mineure | Deux accès successifs à une page protégée ajoutaient deux fois le même message flash en session. | Un message flash identique n'est plus ajouté deux fois (`Session::flash`). | un seul message après deux accès | ✅ Corrigée |
+| ID | Problème | Page | Scénario | Gravité | Cause | Correction | Statut |
+|---|---|---|---|---|---|---|---|
+| ANO-01 | la page « Ma bibliothèque » affiche « Warning: Array to string conversion » au lieu des jeux | `/bibliotheque` | REC-14 | bloquante | la vue reçoit une variable `$contenu` (la liste des jeux) qui écrasait la variable `$contenu` du gabarit commun (le HTML de la page) | j'ai renommé la variable du gabarit en `$corpsPage` (`View::rendre` et `layout.php`) ; la page affiche bien les 4 jeux | corrigée |
+| ANO-02 | les boutons des formulaires prennent toute la largeur du bloc | `/compte` | REC-01 | mineure | le formulaire est en flexbox colonne, donc ses éléments s'étirent par défaut | ajout de `align-self: flex-start` sur les boutons ; c'est conforme à la maquette | corrigée |
+| ANO-03 | les cartes « Promotions en cours » de l'accueil sont bien plus hautes que sur la maquette | `/` | REC-08 | mineure | le même format d'image (4/5) était utilisé pour la grille de 4 et celle de 5 colonnes | format 4/3 sur l'accueil et 3/4 dans la boutique ; c'est conforme à la maquette | corrigée |
+| ANO-04 | les blocs de clé ne sont pas alignés d'une ligne à l'autre dans la bibliothèque | `/bibliotheque` | REC-14 | mineure | la largeur de la colonne changeait selon la taille du bouton | colonne de largeur fixe (340 px) ; les blocs sont alignés | corrigée |
+| ANO-05 | le message « Connecte-toi pour accéder à cette page. » apparaît deux fois | `/connexion?retour=...` | REC-07 | mineure | quand on essaie deux fois d'ouvrir une page protégée, le même message était ajouté deux fois en session | un message identique n'est plus ajouté une deuxième fois (`Session::flash`) ; un seul message après deux essais | corrigée |
 
 ## Erreurs dans les tests eux-mêmes
 
-Deux tests automatisés ont échoué au premier lancement **à cause d'une erreur dans le test, pas dans l'application** :
+Au premier lancement, deux tests automatiques ont échoué, mais l'erreur venait du test et pas de l'application :
 
-| Test | Problème | Correction |
-|---|---|---|
-| `BoutiqueTest::testFiltrePromotionEtPrixRemise` | le test attendait Abyssal Tides en premier, alors que le tri par défaut est « Nouveautés » (Atelier d'hiver est plus récent) | ordre attendu corrigé |
-| `CompteTest::testInscriptionRefuseDoublonsEtMotDePasseFaible` | le test supposait un ordre précis des champs en erreur | comparaison indépendante de l'ordre |
+- `BoutiqueTest::testFiltrePromotionEtPrixRemise` : le test attendait Abyssal Tides en premier, alors que le tri par défaut se fait par nouveautés et qu'Atelier d'hiver est plus récent. J'ai corrigé l'ordre attendu.
+- `CompteTest::testInscriptionRefuseDoublonsEtMotDePasseFaible` : le test supposait que les champs en erreur arrivaient dans un ordre précis. Je compare maintenant sans tenir compte de l'ordre.
 
 ## Bilan
 
-5 anomalies détectées (1 bloquante, 4 mineures), 5 corrigées et re-testées, **0 ouverte**. La campagne de non-régression complète a été relancée après la dernière correction (voir [rapport d'exécution](rapport_execution.md)).
+J'ai trouvé 5 anomalies (1 bloquante et 4 mineures). Elles sont toutes corrigées et retestées, il n'en reste aucune ouverte. Après la dernière correction, j'ai relancé tous les tests pour vérifier que rien d'autre n'était cassé (voir le [rapport d'exécution](rapport_execution.md)).

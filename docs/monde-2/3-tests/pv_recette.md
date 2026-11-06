@@ -2,41 +2,39 @@
 
 | | |
 |---|---|
-| **Projet** | Système d'information PixelWave Studio · Portail joueurs |
-| **Version recettée** | 1.0 (dépôt GitHub `pixelwave-studio`, branche `main`) |
-| **Période de recette** | 06/11/2026 |
-| **Environnement** | recette locale (PHP 8.4, MariaDB 11.4) |
-| **Maître d'ouvrage** | Comité de pilotage PixelWave Studio |
-| **Maître d'œuvre** | _(nom de l'étudiant)_ |
+| Projet | Système d'information PixelWave Studio, portail joueurs |
+| Version testée | 1.0 (dépôt GitHub `pixelwave-studio`, branche `main`) |
+| Date de la recette | 06/11/2026 |
+| Environnement | recette en local (PHP 8.4, MariaDB 11.4) |
+| Maître d'ouvrage | comité de pilotage de PixelWave Studio |
+| Maître d'œuvre | |
 
 ## 1. Objet
 
-Le présent procès-verbal constate le résultat de la recette du portail joueurs (comptes, boutique, bibliothèque de clés, actualités, signalement et suivi des bugs, API REST) au regard du cahier des charges et du [cahier de recette](cahier_de_recette.md).
+Ce procès-verbal donne le résultat de la recette du portail joueurs (comptes, boutique, bibliothèque de clés, actualités, signalement et suivi des bugs, API REST), en le comparant au cahier des charges et au [cahier de recette](cahier_de_recette.md).
 
 ## 2. Résultats
 
 | Indicateur | Résultat |
 |---|---|
-| Scénarios de recette | 24 / 24 conformes |
-| Tests automatisés (unitaires + intégration) | 45 / 45 réussis |
-| Recette API et sécurité | 43 / 43 conformes |
-| Anomalies bloquantes ouvertes | 0 |
-| Anomalies majeures ouvertes | 0 |
-| Anomalies mineures ouvertes | 0 (5 détectées, 5 corrigées) |
+| scénarios du cahier de recette | 24 sur 24 conformes |
+| tests automatisés (unitaires et intégration) | 45 sur 45 réussis |
+| recette de l'API et de la sécurité | 43 sur 43 conformes |
+| anomalies bloquantes encore ouvertes | 0 |
+| anomalies majeures encore ouvertes | 0 |
+| anomalies mineures encore ouvertes | 0 (5 trouvées, 5 corrigées) |
 
 ## 3. Réserves
 
-| N° | Réserve | Levée prévue |
-|---|---|---|
-| R1 | Le paiement est simulé : aucune transaction réelle n'est possible. | intégration d'un prestataire de paiement en mode test |
-| R2 | La recette a été menée en environnement local ; le déploiement sur SRV-PORTAIL (DMZ) doit être validé par le script `infra/tests/validation-portail.sh`. | mission « Mise en place de l'infrastructure » |
-| R3 | La notification Discord n'a pas été testée avec un vrai salon. | test avec un webhook de recette |
+1. Le paiement est simulé, on ne peut pas faire de vrai achat. Il faudra brancher un prestataire de paiement, d'abord en mode test.
+2. La recette a été faite en local. Il faudra valider l'installation sur SRV-PORTAIL (dans la DMZ) avec le script `infra/tests/validation-portail.sh`, pendant la mission Mise en place de l'infrastructure.
+3. Le message envoyé sur Discord n'a pas été testé avec un vrai salon. Il faudra le tester avec un webhook de recette.
 
 ## 4. Décision
 
-☐ Recette prononcée **sans réserve** : mise en production autorisée.
-☐ Recette prononcée **avec réserves** : mise en production autorisée, réserves à lever dans les délais indiqués.
-☐ Recette **refusée** : nouvelle campagne nécessaire.
+- [ ] Recette acceptée sans réserve : mise en production autorisée.
+- [ ] Recette acceptée avec réserves : mise en production autorisée, les réserves seront levées plus tard.
+- [ ] Recette refusée : il faudra refaire une campagne de tests.
 
 | | Maître d'ouvrage | Maître d'œuvre |
 |---|---|---|

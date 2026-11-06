@@ -1,63 +1,61 @@
-# Livrable 4 · Script de création des tables
+# Livrable 4 : script de création des tables
 
-**Fichier : [`database/01_creation.sql`](../../../database/01_creation.sql)** (MariaDB 10.11+ / MySQL 8, moteur InnoDB, encodage `utf8mb4`).
+Le script est dans [`database/01_creation.sql`](../../../database/01_creation.sql). Il est écrit pour MariaDB 10.11 ou plus (ça marche aussi avec MySQL 8), avec le moteur InnoDB et l'encodage `utf8mb4` pour les accents.
 
 ## Ordre de création
 
-Une table référencée doit exister avant celle qui la référence :
+Une table qui est référencée doit exister avant la table qui la référence, sinon MariaDB refuse la clé étrangère. J'ai donc créé :
 
-1. **Tables de référence**, sans clé étrangère : `role`, `plateforme`, `genre`, `statut_ticket`, `priorite`, `categorie_actualite`
-2. **Tables principales** : `utilisateur`, `produit`, `actualite`, `promotion`, `commande`, `ticket`, `jeton_api`, `tentative_connexion`
-3. **Tables associatives et de suivi** : `produit_plateforme`, `ligne_commande`, `cle_activation`, `panier_ligne`, `message_ticket`, `historique_ticket`
-4. **Vue** `v_produit_prix`
+1. d'abord les tables de référence, qui n'ont pas de clé étrangère : `role`, `plateforme`, `genre`, `statut_ticket`, `priorite`, `categorie_actualite` ;
+2. ensuite les tables principales : `utilisateur`, `produit`, `actualite`, `promotion`, `commande`, `ticket`, `jeton_api`, `tentative_connexion` ;
+3. puis les tables associatives et de suivi : `produit_plateforme`, `ligne_commande`, `cle_activation`, `panier_ligne`, `message_ticket`, `historique_ticket` ;
+4. et pour finir la vue `v_produit_prix`.
 
-Le script commence par `DROP DATABASE IF EXISTS` : il est rejouable et recrée toujours la même structure.
+Le script commence par `DROP DATABASE IF EXISTS`, donc on peut le relancer autant de fois qu'on veut, il recrée toujours la même structure.
 
-## Contraintes utilisées
+## Les contraintes
 
-| Contrainte | Exemples | Règle garantie par la base |
+| Contrainte | Exemples dans ma base | Ce qu'elle empêche ou impose |
 |---|---|---|
-| `PRIMARY KEY` + `AUTO_INCREMENT` | toutes les tables | identifiant unique généré automatiquement |
-| `NOT NULL` | `utilisateur.email`, `ticket.titre` | champ obligatoire |
-| `UNIQUE` | `utilisateur.email`, `utilisateur.pseudo`, `cle_activation.code`, `cle_activation.id_ligne` | pas de doublon ; une ligne de commande reçoit une seule clé |
-| `DEFAULT` | `utilisateur.actif = TRUE`, `commande.statut = 'payee'` | valeur par défaut |
-| `FOREIGN KEY` | 31 clés étrangères | intégrité référentielle |
-| `FOREIGN KEY` composée | `cle_activation (id_produit, id_plateforme) → produit_plateforme` | une clé n'existe que pour une plateforme réellement proposée |
-| `ON DELETE CASCADE` | `message_ticket → ticket`, `panier_ligne → utilisateur` | supprimer un ticket supprime ses messages |
-| `ON DELETE SET NULL` | `actualite.id_produit` | retirer un produit ne supprime pas l'actualité |
-| `CHECK` | `prix >= 0`, `pourcentage BETWEEN 1 AND 90`, `date_fin >= date_debut` | valeurs cohérentes |
-| `CHECK` métier | `ck_produit_dlc` : un DLC a un jeu parent, un jeu n'en a pas | règle du catalogue |
-| `ENUM` | `produit.type`, `commande.statut`, `ticket.frequence` | liste de valeurs fermée |
+| `PRIMARY KEY` et `AUTO_INCREMENT` | toutes les tables | chaque ligne a un identifiant unique créé automatiquement |
+| `NOT NULL` | `utilisateur.email`, `ticket.titre` | le champ est obligatoire |
+| `UNIQUE` | e-mail, pseudo, code de clé, `cle_activation.id_ligne` | pas de doublon ; une ligne de commande ne peut recevoir qu'une seule clé |
+| `DEFAULT` | `utilisateur.actif` vaut vrai, `commande.statut` vaut « payee » | valeur mise par défaut |
+| `FOREIGN KEY` | 31 clés étrangères | impossible de pointer vers une ligne qui n'existe pas |
+| clé étrangère sur deux colonnes | `cle_activation (id_produit, id_plateforme)` vers `produit_plateforme` | pas de clé pour une plateforme où le jeu n'est pas vendu |
+| `ON DELETE CASCADE` | messages d'un ticket, panier d'un utilisateur | supprimer un ticket supprime aussi ses messages |
+| `ON DELETE SET NULL` | `actualite.id_produit` | retirer un produit ne supprime pas l'actualité qui en parle |
+| `CHECK` | `prix >= 0`, réduction entre 1 et 90 %, date de fin après la date de début | pas de valeurs absurdes |
+| `CHECK` sur une règle métier | `ck_produit_dlc` | un DLC doit avoir un jeu parent, un jeu ne doit pas en avoir |
+| `ENUM` | type de produit, statut de commande, fréquence d'un bug | seulement les valeurs prévues |
 
-## Types retenus
+## Les types que j'ai choisis
 
-| Type | Usage dans le projet |
-|---|---|
-| `INT UNSIGNED` / `TINYINT UNSIGNED` | identifiants (TINYINT pour les petites listes de référence) |
-| `DECIMAL(6,2)` | prix : valeur exacte, jamais `FLOAT` pour de l'argent |
-| `VARCHAR(n)` | textes courts ; `VARCHAR(255)` pour l'empreinte de mot de passe (taille d'un futur argon2) |
-| `CHAR(64)` | empreinte SHA-256 d'un jeton (longueur fixe) |
-| `VARCHAR(45)` | adresse IP (IPv6 comprise) |
-| `TEXT` | descriptions, messages |
-| `DATE` / `DATETIME` | dates de sortie, horodatages |
-| `BOOLEAN` | indicateurs (`actif`, `newsletter`, `interne`...) |
+- `INT UNSIGNED` pour les identifiants, et `TINYINT UNSIGNED` pour les petites listes (rôles, plateformes, statuts).
+- `DECIMAL(6,2)` pour les prix. Je n'ai pas utilisé `FLOAT` parce qu'il fait des erreurs d'arrondi, ce qui n'est pas acceptable pour de l'argent.
+- `VARCHAR(n)` pour les textes courts. J'ai prévu 255 caractères pour l'empreinte du mot de passe, au cas où on passe plus tard à argon2 qui donne des empreintes plus longues.
+- `CHAR(64)` pour l'empreinte SHA-256 d'un jeton, qui fait toujours 64 caractères.
+- `VARCHAR(45)` pour les adresses IP, pour que l'IPv6 rentre aussi.
+- `TEXT` pour les descriptions et les messages.
+- `DATE` et `DATETIME` pour les dates.
+- `BOOLEAN` pour les champs oui/non (`actif`, `newsletter`, `interne`...).
 
-## Exécution
+## Exécuter le script
 
-Dans phpMyAdmin : onglet **Importer** → `01_creation.sql` → **Exécuter**. En ligne de commande :
+Dans phpMyAdmin : onglet Importer, choisir `01_creation.sql`, puis Exécuter. En ligne de commande :
 
 ```bash
 mariadb -u root -p < database/01_creation.sql
 ```
 
-## Captures d'écran
+## Captures
 
-Exécution réelle sur MariaDB 11.4 (client en ligne de commande) : les 20 tables et la vue sont créées.
+J'ai exécuté le script sur MariaDB 11.4 avec le client en ligne de commande. Les 20 tables et la vue sont bien créées :
 
 ![Tables créées](img/L4_creation_tables.png)
 
-Structure d'une table et liste des 31 clés étrangères créées :
+Ici la structure d'une table et la liste des 31 clés étrangères :
 
 ![Structure et contraintes](img/L4_structure_cle_activation.png)
 
-> Sur le serveur du projet, la même vérification peut être faite dans phpMyAdmin (onglet **Structure** de la base `pixelwave`, puis **Concepteur** pour voir les liaisons).
+Sur le serveur, on peut faire la même vérification dans phpMyAdmin (onglet Structure de la base `pixelwave`, puis Concepteur pour voir les liens entre les tables).

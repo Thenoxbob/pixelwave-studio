@@ -30,7 +30,7 @@ Le projet Figma contient une page par étape :
 
 Les retours du test utilisateur (livrable 8) sont consignés dans [test_utilisateur.md](test_utilisateur.md).
 
-## Monde 2 · Construire, tester, héberger
+## Monde 2 : construire, tester, héberger
 
 Vue d'ensemble : [docs/monde-2](docs/monde-2/README.md)
 

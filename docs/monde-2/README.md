@@ -1,20 +1,20 @@
-# Monde 2 · Construire, tester, héberger
+# Monde 2 : construire, tester, héberger
 
-> Modéliser les données, développer le projet, le recetter et monter l'infrastructure qui l'accueille.
+Dans ce monde, il fallait modéliser les données, développer le projet, le tester et installer l'infrastructure qui l'héberge. Voici ce que j'ai fait pour chaque mission.
 
-| Étape | Mission | Documentation | Réalisations |
+| Étape | Mission | Documentation | Ce que j'ai réalisé |
 |---|---|---|---|
-| 1 · Concevoir et développer | **Conception Backend** | [8 livrables](1-conception-backend/README.md) | MCD/MLD, normalisation 3FN, 20 tables MariaDB, jeu de données, 26 requêtes, API REST conçue et documentée, collection Postman |
-| 1 · Concevoir et développer | **Développement** | [documentation](2-developpement/README.md) | portail joueurs PHP 8 / MariaDB fidèle à la maquette Figma, API REST (21 routes), sécurité OWASP, notification Discord |
-| 2 · Tester et héberger | **Mise en place des tests** | [stratégie, cahier de recette, PV](3-tests/README.md) | 45 tests automatisés, 43 cas de recette API et sécurité, 24 scénarios de recette, 5 anomalies corrigées |
-| 2 · Tester et héberger | **Mise en place de l'infrastructure** | [documentation technique](4-infrastructure/README.md) | scripts d'installation Debian (Apache, MariaDB, BIND9, Kea, ufw, fail2ban), sauvegarde/restauration, 39 contrôles de validation |
+| 1. Concevoir et développer | Conception Backend | [les 8 livrables](1-conception-backend/README.md) | MCD et MLD, normalisation en 3FN, base MariaDB de 20 tables, jeu de données, 26 requêtes, conception et documentation de l'API REST, collection Postman |
+| 1. Concevoir et développer | Développement | [documentation](2-developpement/README.md) | portail joueurs en PHP 8 et MariaDB qui reprend la maquette Figma, API REST de 21 routes, sécurité selon l'OWASP, notification Discord |
+| 2. Tester et héberger | Mise en place des tests | [stratégie, cahier de recette, PV](3-tests/README.md) | 45 tests automatiques, 43 cas de recette sur l'API et la sécurité, 24 scénarios de recette, 5 anomalies corrigées |
+| 2. Tester et héberger | Mise en place de l'infrastructure | [documentation technique](4-infrastructure/README.md) | scripts d'installation Debian (Apache, MariaDB, BIND9, Kea, ufw, fail2ban), sauvegarde et restauration, 39 contrôles de validation |
 
-## Où est le code ?
+## Où trouver le code
 
 ```
-database/   scripts SQL (création, jeu de données, requêtes) et schémas
-portail/    application web PHP (pages + API REST) et ses tests
-api/        collection et environnement Postman
-infra/      installation et configuration des serveurs, scripts de validation
-docs/       documentation des missions
+database/   les scripts SQL (création, jeu de données, requêtes) et les schémas
+portail/    l'application web en PHP (pages et API REST) et ses tests
+api/        la collection et l'environnement Postman
+infra/      l'installation et la configuration des serveurs, les scripts de validation
+docs/       la documentation des missions
 ```

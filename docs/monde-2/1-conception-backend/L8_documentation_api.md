@@ -1,22 +1,22 @@
-# Livrable 8 · Documentation de l'API REST du portail joueurs
+# Livrable 8 : documentation de l'API REST
 
-> Version 1 · URL de base : `https://portail.pixelwave.lan/api/v1` (en local : `http://127.0.0.1:8080/api/v1`)
-> Collection Postman prête à l'emploi : [`api/pixelwave_api.postman_collection.json`](../../../api/pixelwave_api.postman_collection.json) + environnement [`pixelwave_local`](../../../api/pixelwave_local.postman_environment.json).
-> Les exemples de réponses ci-dessous ont été obtenus en appelant l'API sur le jeu de données de test.
+Version 1 de l'API du portail joueurs. Adresse de base sur le serveur : `https://portail.pixelwave.lan/api/v1`, et en local : `http://127.0.0.1:8080/api/v1`.
+
+Une collection Postman est prête dans [`api/pixelwave_api.postman_collection.json`](../../../api/pixelwave_api.postman_collection.json), avec son environnement [`pixelwave_local`](../../../api/pixelwave_local.postman_environment.json). Les exemples de réponses de cette page viennent de vrais appels à l'API sur le jeu de données de test.
 
 ## Sommaire
 
-- [Démarrage rapide](#démarrage-rapide)
-- [Conventions](#conventions)
-- [Authentification](#authentification) · [Santé](#santé) · [Catalogue](#catalogue) · [Actualités](#actualités)
+- [Pour commencer](#pour-commencer)
+- [Règles générales](#règles-générales)
+- [Authentification](#authentification), [Santé](#santé), [Catalogue](#catalogue), [Actualités](#actualités)
 - [Espace joueur](#espace-joueur) : profil, bibliothèque, clés, panier, commandes
 - [Tickets](#tickets)
-- [Codes d'erreur](#codes-derreur)
+- [Liste des erreurs](#liste-des-erreurs)
 
-## Démarrage rapide
+## Pour commencer
 
 ```bash
-# 1. obtenir un jeton
+# 1. récupérer un jeton
 curl -X POST http://127.0.0.1:8080/api/v1/auth/jetons \
      -H "Content-Type: application/json" \
      -d '{"email":"hugo.petit@exemple.test","mot_de_passe":"<mot de passe>","libelle":"Launcher PC"}'
@@ -25,35 +25,33 @@ curl -X POST http://127.0.0.1:8080/api/v1/auth/jetons \
 curl http://127.0.0.1:8080/api/v1/moi/bibliotheque -H "Authorization: Bearer pw_..."
 ```
 
-## Conventions
+## Règles générales
 
-| Élément | Règle |
-|---|---|
-| Format | JSON UTF-8 (`Content-Type: application/json` pour les corps envoyés) |
-| Authentification | `Authorization: Bearer <jeton>` sur les routes marquées 🔒 |
-| Listes | `{ "donnees": [...], "total": n }` |
-| Dates | `AAAA-MM-JJ` ou `AAAA-MM-JJ HH:MM:SS` (heure de Paris) |
-| Prix | nombre décimal en euros TTC |
-| Plateformes | codes `PC`, `PS5`, `SWITCH`, `XBOX` |
-| Erreurs | `{ "erreur": { "code", "message", "details"? } }` |
+- Tout est en JSON UTF-8. Quand on envoie un corps, il faut l'en-tête `Content-Type: application/json`.
+- Les routes marquées « connexion requise » demandent l'en-tête `Authorization: Bearer <jeton>`.
+- Les listes ont toujours la forme `{ "donnees": [...], "total": n }`.
+- Les dates sont au format `AAAA-MM-JJ` ou `AAAA-MM-JJ HH:MM:SS`, à l'heure de Paris.
+- Les prix sont en euros TTC.
+- Les codes de plateforme sont `PC`, `PS5`, `SWITCH` et `XBOX`.
+- Les erreurs ont la forme `{ "erreur": { "code", "message", "details" } }` (`details` seulement quand c'est utile).
 
-Appel depuis le navigateur avec le cookie de session du portail : ajouter `X-CSRF-Token` (valeur de la balise `<meta name="csrf-token">`) sur les `POST`, `PATCH` et `DELETE`.
+Si on appelle l'API depuis le navigateur avec le cookie de session du portail, il faut ajouter l'en-tête `X-CSRF-Token` sur les `POST`, `PATCH` et `DELETE`. Sa valeur est dans la balise `<meta name="csrf-token">` de la page.
 
 ---
 
 ## Authentification
 
-### `POST /auth/jetons` — obtenir un jeton
+### `POST /auth/jetons` : obtenir un jeton
 
-Public. Échange les identifiants d'un compte actif contre un jeton valable 90 jours.
+Accessible sans connexion. On envoie les identifiants d'un compte actif et on reçoit un jeton valable 90 jours.
 
 | Champ | Type | Obligatoire | Description |
 |---|---|---|---|
-| `email` | texte | oui | adresse du compte |
+| `email` | texte | oui | e-mail du compte |
 | `mot_de_passe` | texte | oui | mot de passe |
-| `libelle` | texte (≤ 50) | non | nom du jeton, visible dans « Mon compte » (défaut : `API`) |
+| `libelle` | texte (50 max) | non | nom du jeton, visible dans « Mon compte » (par défaut `API`) |
 
-**201 Created**
+Réponse 201 :
 
 ```json
 {
@@ -67,29 +65,29 @@ Public. Échange les identifiants d'un compte actif contre un jeton valable 90 j
 }
 ```
 
-> Le jeton n'est renvoyé qu'**une seule fois**. Seule son empreinte est conservée.
+Attention, le jeton n'est renvoyé qu'une seule fois : seule son empreinte est gardée en base.
 
-**Erreurs** : `400 donnees_invalides` (champ manquant), `400 json_invalide`, `401 identifiants_invalides` (même message que le compte existe ou non), `429 trop_de_tentatives` (5 échecs sur 15 min).
+Erreurs possibles : `400 donnees_invalides` (champ manquant), `400 json_invalide`, `401 identifiants_invalides` (même message que le compte existe ou pas), `429 trop_de_tentatives` (5 échecs en 15 minutes).
 
-### `DELETE /auth/jetons/courant` 🔒 — révoquer le jeton utilisé
+### `DELETE /auth/jetons/courant` : révoquer le jeton utilisé (connexion requise)
 
-**204 No Content**. Le jeton devient inutilisable immédiatement (`401 jeton_invalide` ensuite).
+Réponse 204 sans contenu. Le jeton ne marche plus tout de suite après (`401 jeton_invalide`).
 
 ---
 
 ## Santé
 
-### `GET /sante` — état du service
+### `GET /sante` : état du service
 
-Public. Utilisé par l'outil de supervision.
+Accessible sans connexion. C'est cette route que l'outil de supervision appelle.
 
-**200 OK**
+Réponse 200 :
 
 ```json
 { "statut": "ok", "base_de_donnees": "ok", "date": "2026-11-06T14:51:47+01:00" }
 ```
 
-**503** si la base ne répond pas : `{ "statut": "degrade", "base_de_donnees": "injoignable", ... }`
+Si la base ne répond pas, on reçoit un 503 avec `"statut": "degrade"` et `"base_de_donnees": "injoignable"`.
 
 ---
 
@@ -97,20 +95,20 @@ Public. Utilisé par l'outil de supervision.
 
 ### `GET /plateformes`
 
-Public. **200** : `{ "donnees": [ { "id_plateforme": 1, "code": "PC", "nom": "PC" }, ... ] }`
+Accessible sans connexion. Réponse 200 : `{ "donnees": [ { "id_plateforme": 1, "code": "PC", "nom": "PC" }, ... ] }`
 
-### `GET /produits` — lister le catalogue
+### `GET /produits` : le catalogue
 
-Public. Produits en vente uniquement.
+Accessible sans connexion. Renvoie seulement les produits en vente.
 
-| Paramètre | Valeurs | Description |
+| Paramètre | Valeurs | Rôle |
 |---|---|---|
-| `type` | `jeu`, `dlc`, `promo` | filtre ; `promo` = remisés aujourd'hui |
-| `plateforme` | `PC`, `PS5`, `SWITCH`, `XBOX` | disponible sur cette plateforme |
-| `q` | texte (1 à 100) | recherche dans le titre |
-| `tri` | `nouveautes` (défaut), `prix_croissant`, `prix_decroissant`, `titre` | ordre |
+| `type` | `jeu`, `dlc`, `promo` | filtre ; `promo` donne les produits en réduction aujourd'hui |
+| `plateforme` | `PC`, `PS5`, `SWITCH`, `XBOX` | produits disponibles sur cette plateforme |
+| `q` | texte (1 à 100 caractères) | recherche dans le titre |
+| `tri` | `nouveautes` (par défaut), `prix_croissant`, `prix_decroissant`, `titre` | ordre du résultat |
 
-`GET /produits?type=promo` → **200 OK**
+Exemple avec `GET /produits?type=promo`, réponse 200 :
 
 ```json
 {
@@ -134,18 +132,18 @@ Public. Produits en vente uniquement.
 }
 ```
 
-**400** `GET /produits?type=xyz`
+Avec une valeur interdite, par exemple `GET /produits?type=xyz`, réponse 400 :
 
 ```json
 { "erreur": { "code": "donnees_invalides", "message": "Certaines données sont invalides.",
               "details": { "type": "Valeur non autorisée." } } }
 ```
 
-### `GET /produits/{id}` — fiche produit
+### `GET /produits/{id}` : fiche d'un produit
 
-Public. Ajoute `description`, `offres` (disponibilité par plateforme, sans révéler le stock exact) et `dlc` (pour un jeu).
+Accessible sans connexion. En plus des champs de la liste, on a la `description`, les `offres` (disponible ou non sur chaque plateforme, sans donner le stock exact) et les `dlc` si c'est un jeu.
 
-`GET /produits/6` → **200 OK**
+Exemple avec `GET /produits/6`, réponse 200 :
 
 ```json
 {
@@ -163,7 +161,7 @@ Public. Ajoute `description`, `offres` (disponibilité par plateforme, sans rév
 }
 ```
 
-**Erreur** : `404 produit_introuvable` (inexistant ou retiré de la vente).
+Erreur possible : `404 produit_introuvable`, si le produit n'existe pas ou n'est plus en vente.
 
 ---
 
@@ -171,9 +169,9 @@ Public. Ajoute `description`, `offres` (disponibilité par plateforme, sans rév
 
 ### `GET /actualites?limite=20`
 
-Public. Actualités **publiées** uniquement, de la plus récente à la plus ancienne. `limite` entre 1 et 50 (sinon **400**).
+Accessible sans connexion. Seulement les actualités publiées, de la plus récente à la plus ancienne. `limite` doit être entre 1 et 50, sinon on reçoit une erreur 400.
 
-`GET /actualites?limite=1` → **200 OK**
+Exemple avec `GET /actualites?limite=1`, réponse 200 :
 
 ```json
 {
@@ -188,31 +186,32 @@ Public. Actualités **publiées** uniquement, de la plus récente à la plus anc
 
 ### `GET /actualites/{id}`
 
-Public. Même objet + `contenu`. `404 actualite_introuvable` pour un brouillon ou un identifiant inconnu.
+Accessible sans connexion. Même chose qu'au-dessus, avec le `contenu` complet. On reçoit `404 actualite_introuvable` pour un brouillon ou un identifiant qui n'existe pas.
 
 ---
 
 ## Espace joueur
 
-Toutes ces routes exigent un jeton (🔒). Elles agissent **toujours** sur le compte du jeton.
+Toutes ces routes demandent une connexion. Elles travaillent toujours sur le compte à qui appartient le jeton.
 
-### `GET /moi` 🔒 — profil
+### `GET /moi` : profil
 
-**200 OK**
+Réponse 200 :
 
 ```json
 { "id": 4, "pseudo": "LeaPixel", "email": "lea.martin@exemple.test", "role": "joueur",
   "newsletter": true, "date_inscription": "2026-03-01 20:14:00" }
 ```
 
-**401** sans jeton : `{ "erreur": { "code": "non_authentifie", "message": "Connexion requise." } }`
-**401** jeton faux, expiré ou révoqué : `{ "erreur": { "code": "jeton_invalide", "message": "Jeton invalide, expiré ou révoqué." } }`
+Sans jeton, réponse 401 : `{ "erreur": { "code": "non_authentifie", "message": "Connexion requise." } }`
 
-### `GET /moi/bibliotheque` 🔒 — jeux possédés
+Avec un jeton faux, expiré ou révoqué, réponse 401 : `{ "erreur": { "code": "jeton_invalide", "message": "Jeton invalide, expiré ou révoqué." } }`
 
-Produits des commandes **payées** (une commande remboursée n'y figure plus). Une clé non révélée est masquée.
+### `GET /moi/bibliotheque` : jeux possédés
 
-**200 OK** (extrait)
+Renvoie les produits des commandes payées (une commande remboursée n'apparaît plus). Si le joueur n'a pas encore affiché une clé, elle est masquée.
+
+Réponse 200 (extrait) :
 
 ```json
 {
@@ -228,22 +227,22 @@ Produits des commandes **payées** (une commande remboursée n'y figure plus). U
 }
 ```
 
-### `POST /moi/cles/{id}/revelation` 🔒 — révéler une clé
+### `POST /moi/cles/{id}/revelation` : afficher une clé
 
-Aucun corps. Enregistre la date de révélation (une clé révélée n'est plus remboursable) et renvoie le code complet. Rappeler la route renvoie le même code sans changer la date.
+Pas de corps à envoyer. La route enregistre la date d'affichage (après ça, la clé n'est plus remboursable) et renvoie le code complet. Si on la rappelle, on récupère le même code et la date ne change pas.
 
-**200 OK**
+Réponse 200 :
 
 ```json
 { "id_cle": 5, "produit": "Neon Drift : Circuit Nocturne", "plateforme": "PC",
   "cle": "3V835-NUTAC-K79ZN", "date_revelation": "2026-11-06 14:51:47" }
 ```
 
-**Erreur** : `404 cle_introuvable` si la clé n'existe pas **ou appartient à un autre joueur**.
+Erreur possible : `404 cle_introuvable` si la clé n'existe pas ou si elle appartient à un autre joueur.
 
-### `GET /moi/panier` 🔒
+### `GET /moi/panier`
 
-**200 OK**
+Réponse 200 :
 
 ```json
 { "lignes": [ { "id_ligne": 1, "produit": { "id": 4, "titre": "Starlit Courier", "type": "jeu" },
@@ -251,40 +250,40 @@ Aucun corps. Enregistre la date de révélation (une clé révélée n'est plus 
   "total": 29.99 }
 ```
 
-### `POST /moi/panier` 🔒 — ajouter au panier
+### `POST /moi/panier` : ajouter au panier
 
 | Champ | Type | Obligatoire | Description |
 |---|---|---|---|
-| `id_produit` | entier > 0 | oui | produit en vente |
-| `plateforme` | code | oui | plateforme proposée pour ce produit |
+| `id_produit` | entier positif | oui | produit en vente |
+| `plateforme` | code | oui | une plateforme où ce produit est vendu |
 
 ```json
 { "id_produit": 5, "plateforme": "PC" }
 ```
 
-**201 Created** : `{ "id_ligne": 4 }`
+Réponse 201 : `{ "id_ligne": 4 }`
 
-| Erreur | Cas |
-|---|---|
-| `400 plateforme_invalide` | le produit n'existe pas sur cette plateforme |
-| `404 produit_introuvable` | produit inconnu ou retiré |
-| `409 stock_epuise` | plus aucune clé pour cette plateforme |
-| `409 deja_possede` | le joueur possède déjà ce produit sur cette plateforme |
-| `409 deja_dans_panier` | déjà dans le panier |
+Erreurs possibles :
+
+- `400 plateforme_invalide` : le produit n'existe pas sur cette plateforme ;
+- `404 produit_introuvable` : produit inconnu ou retiré de la vente ;
+- `409 stock_epuise` : il n'y a plus de clé pour cette plateforme ;
+- `409 deja_possede` : le joueur a déjà ce produit sur cette plateforme ;
+- `409 deja_dans_panier` : le produit est déjà dans le panier.
 
 ```json
 { "erreur": { "code": "stock_epuise", "message": "Plus aucune clé disponible pour cette plateforme. Reviens bientôt !" } }
 ```
 
-### `DELETE /moi/panier/{id_ligne}` 🔒
+### `DELETE /moi/panier/{id_ligne}`
 
-**204 No Content** · `404 ligne_introuvable` si la ligne n'est pas dans **son** panier.
+Réponse 204 sans contenu, ou `404 ligne_introuvable` si la ligne n'est pas dans le panier du joueur.
 
-### `POST /moi/commandes` 🔒 — valider le panier
+### `POST /moi/commandes` : valider le panier
 
-Aucun corps. Transforme le panier en commande payée (paiement simulé dans cette version), au **prix du jour**, et attribue une clé par article. Tout ou rien : si une seule clé manque, aucune commande n'est créée.
+Pas de corps à envoyer. Le panier devient une commande payée (pour l'instant le paiement est simulé), au prix du jour, et chaque article reçoit une clé. C'est tout ou rien : s'il manque une seule clé, aucune commande n'est créée.
 
-**201 Created**
+Réponse 201 :
 
 ```json
 {
@@ -293,11 +292,11 @@ Aucun corps. Transforme le panier en commande payée (paiement simulé dans cett
 }
 ```
 
-**Erreurs** : `400 panier_vide`, `409 stock_epuise` (avec `details.articles` : liste des produits indisponibles).
+Erreurs possibles : `400 panier_vide`, `409 stock_epuise` (la liste des produits qui manquent est dans `details.articles`).
 
-### `GET /moi/commandes` 🔒
+### `GET /moi/commandes`
 
-**200 OK**
+Réponse 200 :
 
 ```json
 { "donnees": [ { "reference": "CMD-2026-000004", "date": "2026-10-21 19:02:00", "statut": "payee",
@@ -309,26 +308,24 @@ Aucun corps. Transforme le panier en commande payée (paiement simulé dans cett
 
 ## Tickets
 
-Cycle de vie (ITIL) : `nouveau` → `en_cours` ⇄ `attente_joueur` → `resolu` → `clos`.
-Priorités : `basse`, `moyenne`, `haute`, `critique` (fixées par le support uniquement).
+Un ticket passe par les statuts `nouveau`, `en_cours`, `attente_joueur` (il peut revenir à `en_cours`), `resolu` puis `clos`. Les priorités sont `basse`, `moyenne`, `haute` et `critique`, et seul le support peut les fixer.
 
-### `GET /tickets` 🔒
+### `GET /tickets` (connexion requise)
 
-- **Joueur** : ses propres tickets, du plus récemment mis à jour au plus ancien.
-- **Support / admin** : toute la file, tickets non qualifiés en premier puis par priorité. Filtre `?statut=nouveau` (code de statut, sinon **400**).
+Un joueur reçoit ses propres tickets, du plus récemment modifié au plus ancien. Le support reçoit toute la file : d'abord les tickets pas encore qualifiés, puis par priorité. Le support peut filtrer avec `?statut=nouveau` (un code de statut inconnu donne une erreur 400).
 
-**200 OK** : `{ "donnees": [ <ticket>, ... ], "total": n }` (voir l'objet ticket ci-dessous).
+Réponse 200 : `{ "donnees": [ <ticket>, ... ], "total": n }`. Le format d'un ticket est donné juste en dessous.
 
-### `POST /tickets` 🔒 — signaler un bug
+### `POST /tickets` : signaler un bug (connexion requise)
 
 | Champ | Type | Obligatoire | Règle |
 |---|---|---|---|
-| `titre` | texte | oui | 5 à 150 caractères |
-| `description` | texte | oui | 20 à 5 000 caractères |
-| `id_produit` | entier | non | produit en vente |
-| `plateforme` | code | non | `PC`, `PS5`, `SWITCH`, `XBOX` |
-| `version_jeu` | texte | non | lettres, chiffres, points, tirets (ex. `1.4.0`) |
-| `frequence` | liste | non | `toujours`, `parfois`, `une_fois` |
+| `titre` | texte | oui | entre 5 et 150 caractères |
+| `description` | texte | oui | entre 20 et 5 000 caractères |
+| `id_produit` | entier | non | un produit en vente |
+| `plateforme` | code | non | `PC`, `PS5`, `SWITCH` ou `XBOX` |
+| `version_jeu` | texte | non | lettres, chiffres, points et tirets, par exemple `1.4.0` |
+| `frequence` | liste | non | `toujours`, `parfois` ou `une_fois` |
 
 ```json
 { "id_produit": 6, "plateforme": "PC", "version_jeu": "1.4.0", "frequence": "parfois",
@@ -336,7 +333,7 @@ Priorités : `basse`, `moyenne`, `haute`, `critique` (fixées par le support uni
   "description": "L'image se fige environ trois secondes à l'entrée du tunnel, en mode nuit." }
 ```
 
-**201 Created**
+Réponse 201 :
 
 ```json
 {
@@ -349,20 +346,20 @@ Priorités : `basse`, `moyenne`, `haute`, `critique` (fixées par le support uni
 }
 ```
 
-L'équipe QA est prévenue dans son salon Discord (webhook) ; une panne de Discord ne bloque pas la création.
+L'équipe QA reçoit un message dans son salon Discord (webhook). Si Discord ne répond pas, le ticket est quand même créé.
 
-**400** (détail par champ)
+Si des champs sont incorrects, réponse 400 avec le détail champ par champ :
 
 ```json
 { "erreur": { "code": "donnees_invalides", "message": "Certaines données sont invalides.",
               "details": { "titre": "Entre 5 et 150 caractères.", "description": "Ce champ est obligatoire." } } }
 ```
 
-### `GET /tickets/{reference}` 🔒
+### `GET /tickets/{reference}` (connexion requise)
 
-Auteur du ticket ou support. Ajoute `messages` et `historique`. Les notes internes ne sont renvoyées qu'au support (avec le champ `interne`).
+Réservé à l'auteur du ticket et au support. En plus du ticket, on reçoit les `messages` et l'`historique`. Les notes internes ne sont envoyées qu'au support, avec un champ `interne`.
 
-`GET /tickets/BUG-2026-0002` (joueur) → **200 OK** (extrait)
+Exemple avec `GET /tickets/BUG-2026-0002` en tant que joueur, réponse 200 (extrait) :
 
 ```json
 {
@@ -383,35 +380,37 @@ Auteur du ticket ou support. Ajoute `messages` et `historique`. Les notes intern
 }
 ```
 
-**Erreur** : `404 ticket_introuvable` (inexistant ou ticket d'un autre joueur).
+Erreur possible : `404 ticket_introuvable`, si le ticket n'existe pas ou appartient à un autre joueur.
 
-### `POST /tickets/{reference}/messages` 🔒
+### `POST /tickets/{reference}/messages` (connexion requise)
 
 | Champ | Type | Obligatoire | Description |
 |---|---|---|---|
-| `contenu` | texte (2 à 5 000) | oui | message |
-| `interne` | booléen | non | support uniquement : note invisible pour le joueur |
+| `contenu` | texte (2 à 5 000 caractères) | oui | le message |
+| `interne` | booléen | non | seulement pour le support : note que le joueur ne voit pas |
 
-**201 Created** : `{ "id": 10 }`. Si le ticket était `attente_joueur` et que le joueur répond, il repasse automatiquement `en_cours`.
-**Erreurs** : `400 donnees_invalides`, `404 ticket_introuvable`, `409 ticket_clos`.
+Réponse 201 : `{ "id": 10 }`. Si le ticket attendait une réponse du joueur (`attente_joueur`) et que le joueur répond, il repasse tout seul en `en_cours`.
 
-### `PATCH /tickets/{reference}` 🔒 support
+Erreurs possibles : `400 donnees_invalides`, `404 ticket_introuvable`, `409 ticket_clos`.
 
-Qualification, affectation, changement de statut. Au moins un champ parmi `statut`, `priorite`, `id_technicien`.
+### `PATCH /tickets/{reference}` (support uniquement)
+
+Sert à qualifier un ticket, l'affecter ou changer son statut. Il faut envoyer au moins un des champs `statut`, `priorite` ou `id_technicien`.
 
 | Champ | Type | Description |
 |---|---|---|
 | `statut` | code de statut | chaque changement est ajouté à l'historique |
 | `priorite` | code de priorité | |
-| `id_technicien` | entier ou `null` | membre du support ou admin (`null` = désaffecter) |
-| `commentaire` | texte (≤ 255) | enregistré dans l'historique |
+| `id_technicien` | entier ou `null` | un membre du support ou un admin (`null` pour retirer l'affectation) |
+| `commentaire` | texte (255 max) | enregistré dans l'historique |
 
 ```json
 { "statut": "en_cours", "priorite": "haute", "id_technicien": 2, "commentaire": "Reproduit sur PC" }
 ```
 
-**200 OK** : le ticket mis à jour.
-**Erreurs** : `403 acces_refuse` (joueur), `400 donnees_invalides` (statut inconnu, technicien qui n'est pas du support...).
+Réponse 200 : le ticket mis à jour.
+
+Erreurs possibles : `403 acces_refuse` si c'est un joueur, `400 donnees_invalides` si le statut n'existe pas ou si le technicien ne fait pas partie du support.
 
 ```json
 { "erreur": { "code": "acces_refuse", "message": "Tu n'as pas les droits nécessaires pour cette action." } }
@@ -419,29 +418,29 @@ Qualification, affectation, changement de statut. Au moins un champ parmi `statu
 
 ---
 
-## Codes d'erreur
+## Liste des erreurs
 
 | HTTP | Code | Signification | Que faire |
 |---|---|---|---|
-| 400 | `json_invalide` | corps JSON illisible | vérifier la syntaxe |
-| 400 | `donnees_invalides` | un ou plusieurs champs refusés | lire `details` (champ → message) |
-| 400 | `plateforme_invalide` | produit absent de cette plateforme | voir `offres` du produit |
-| 400 | `panier_vide` | validation d'un panier vide | ajouter un produit |
-| 401 | `non_authentifie` | pas de jeton | envoyer `Authorization: Bearer` |
-| 401 | `jeton_invalide` | jeton faux, expiré ou révoqué | en demander un nouveau |
-| 401 | `identifiants_invalides` | e-mail ou mot de passe faux | — |
-| 403 | `acces_refuse` | profil insuffisant | — |
-| 403 | `csrf_invalide` | appel par cookie sans `X-CSRF-Token` | ajouter l'en-tête |
-| 404 | `introuvable` et `*_introuvable` | ressource absente ou appartenant à un autre | — |
-| 405 | `methode_non_autorisee` | méthode non prévue (voir l'en-tête `Allow`) | — |
-| 409 | `stock_epuise`, `deja_possede`, `deja_dans_panier`, `ticket_clos` | conflit avec l'état actuel | lire `message` |
-| 429 | `trop_de_tentatives` | trop d'échecs de connexion | attendre 15 minutes |
-| 500 | `erreur_interne` | erreur serveur | contacter le support (détail dans le journal serveur) |
+| 400 | `json_invalide` | le JSON envoyé est illisible | vérifier la syntaxe |
+| 400 | `donnees_invalides` | un ou plusieurs champs sont refusés | regarder `details` |
+| 400 | `plateforme_invalide` | le produit n'est pas vendu sur cette plateforme | regarder les `offres` du produit |
+| 400 | `panier_vide` | on valide un panier vide | ajouter un produit |
+| 401 | `non_authentifie` | pas de jeton | ajouter `Authorization: Bearer` |
+| 401 | `jeton_invalide` | jeton faux, expiré ou révoqué | demander un nouveau jeton |
+| 401 | `identifiants_invalides` | mauvais e-mail ou mot de passe | |
+| 403 | `acces_refuse` | profil pas autorisé | |
+| 403 | `csrf_invalide` | appel avec le cookie mais sans `X-CSRF-Token` | ajouter l'en-tête |
+| 404 | `introuvable` et les `*_introuvable` | ressource absente ou qui appartient à un autre | |
+| 405 | `methode_non_autorisee` | méthode pas prévue (voir l'en-tête `Allow`) | |
+| 409 | `stock_epuise`, `deja_possede`, `deja_dans_panier`, `ticket_clos` | conflit avec l'état actuel | lire le `message` |
+| 429 | `trop_de_tentatives` | trop de connexions ratées | attendre 15 minutes |
+| 500 | `erreur_interne` | erreur du serveur | contacter le support (le détail est dans le journal du serveur) |
 
 ## Tester l'API
 
-1. Importer la collection et l'environnement Postman du dossier [`api/`](../../../api/).
-2. Réinitialiser la base (`01_creation.sql` puis `02_jeu_de_donnees.sql`).
-3. Lancer la collection avec le **Collection Runner** : 30 requêtes, chacune vérifie son code de statut et une partie du contenu, cas d'erreur compris.
+1. Importer dans Postman la collection et l'environnement du dossier [`api/`](../../../api/).
+2. Remettre la base à zéro avec `01_creation.sql` puis `02_jeu_de_donnees.sql`.
+3. Lancer la collection avec le Collection Runner. Il y a 30 requêtes, et chacune vérifie son code de retour et une partie de la réponse, y compris pour les cas d'erreur.
 
-Une recette automatisée équivalente (43 cas, dont la sécurité) se lance sans Postman : `php portail/tests/api/recette_api.php` (voir la [mission Tests](../3-tests/README.md)).
+Il existe aussi un script qui fait une recette équivalente sans Postman (43 cas, sécurité comprise) : `php portail/tests/api/recette_api.php`. Il est expliqué dans la [mission Tests](../3-tests/README.md).
