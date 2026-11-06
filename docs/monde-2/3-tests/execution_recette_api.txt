@@ -1,0 +1,48 @@
+Base réinitialisée.
+Recette API sur http://127.0.0.1:8080
+
+  API-01  OK     Santé du service — HTTP 200
+  API-02  OK     Catalogue complet (produits en vente) — HTTP 200
+  API-03  OK     Filtre promotions — HTTP 200
+  API-04  OK     Filtre invalide refusé — HTTP 400
+  API-05  OK     Détail produit avec prix remisé et offres — HTTP 200
+  API-06  OK     Produit inexistant — HTTP 404
+  API-07  OK     Produit retiré de la vente invisible — HTTP 404
+  API-08  OK     Actualités publiées uniquement (brouillon exclu) — HTTP 200
+  API-09  OK     Route protégée sans jeton — HTTP 401
+  API-10  OK     Jeton inventé — HTTP 401
+  API-11  OK     Jeton expiré — HTTP 401
+  API-12  OK     Création de jeton, mauvais mot de passe — HTTP 401
+  API-13  OK     Création de jeton valide — HTTP 201
+  API-14  OK     Profil avec le nouveau jeton — HTTP 200
+  API-15  OK     JSON mal formé — HTTP 400
+  API-16  OK     Bibliothèque : clé non révélée masquée — HTTP 200
+  API-17  OK     Révéler la clé d'un autre joueur — HTTP 404
+  API-18  OK     Révéler sa propre clé — HTTP 200
+  API-19  OK     Ajout panier : rupture de stock — HTTP 409
+  API-20  OK     Ajout panier : plateforme non proposée — HTTP 400
+  API-21  OK     Ajout panier : produit déjà possédé — HTTP 409
+  API-22  OK     Ajout panier : précommande Pocket Galaxy — HTTP 201
+  API-23  OK     Validation de commande — HTTP 201
+  API-24  OK     Nouvelle validation avec panier vide — HTTP 400
+  API-25  OK     Signalement incomplet — HTTP 400
+  API-26  OK     Signalement valide — HTTP 201
+  API-27  OK     Lire le ticket d'un autre joueur — HTTP 404
+  API-28  OK     Un joueur ne peut pas qualifier un ticket — HTTP 403
+  API-29  OK     Le support qualifie et affecte le ticket — HTTP 200
+  API-30  OK     Le support voit la file complète — HTTP 200
+  API-31  OK     Le joueur répond sur son ticket — HTTP 201
+  API-32  OK     Méthode non autorisée — HTTP 405
+  SEC-01  OK     Connexion par formulaire (redirection) — HTTP 303
+  SEC-02  OK     Formulaire sans jeton CSRF refusé — HTTP 403
+  SEC-03  OK     Appel API par cookie sans en-tête CSRF refusé — HTTP 403
+  SEC-04  OK     Contenu saisi échappé à l'affichage (XSS) — HTTP 200
+  SEC-05  OK     En-têtes de sécurité présents — HTTP 200
+  SEC-06  OK     Cookie de session HttpOnly et SameSite — HTTP 200
+  SEC-07  OK     Page protégée sans connexion : redirection — HTTP 303
+  SEC-08  OK     Injection SQL dans la recherche sans effet — HTTP 200
+  SEC-09  OK     Blocage après 5 échecs de connexion — HTTP 429
+  SEC-10  OK     Révocation du jeton courant — HTTP 204
+  SEC-11  OK     Jeton révoqué inutilisable — HTTP 401
+
+43/43 cas conformes

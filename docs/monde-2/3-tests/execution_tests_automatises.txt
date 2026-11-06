@@ -1,0 +1,63 @@
+
+== Suite « unit » ==
+
+HelpersTest
+  [OK]     testEchappementEmpecheLInjectionHtml
+  [OK]     testFormatDesPrix
+  [OK]     testFormatDesDates
+  [OK]     testExtraitNeCoupePasUnCaractere
+  [OK]     testEmpreinteDesJetonsApi
+
+RouterTest
+  [OK]     testExtraitLesParametresDeLUrl
+  [OK]     testChoisitLaRouteSelonLaMethode
+  [OK]     testUrlInconnueDonne404
+  [OK]     testMauvaiseMethodeDonne405AvecMethodesAutorisees
+
+ValidatorTest
+  [OK]     testChampObligatoireVideEstRefuse
+  [OK]     testEmailInvalideEstRefuse
+  [OK]     testEmailValideEstAccepte
+  [OK]     testLongueurCompteLesCaracteresAccentues
+  [OK]     testPolitiqueDeMotDePasse
+  [OK]     testValeurHorsListeEstRefusee
+  [OK]     testIdentifiantDoitEtreEntierPositif
+  [OK]     testVerifierLeveUneErreur400AvecLeDetail
+
+== Suite « integration » ==
+
+BoutiqueTest
+  [OK]     testCatalogueNAfficheQueLesProduitsEnVente
+  [OK]     testFiltrePromotionEtPrixRemise
+  [OK]     testRechercheNeTraitePasLesJokersSql
+  [OK]     testAjoutAuPanierPuisCommandeAttribueUneCle
+  [OK]     testPlateformeNonProposeeEstRefusee
+  [OK]     testRuptureDeStockEstSignalee
+  [OK]     testProduitDejaPossedeEstRefuse
+  [OK]     testProduitRetireDeLaVenteEstIntrouvable
+  [OK]     testCommandeAnnuleeEntierementSiUneCleManque
+  [OK]     testCommandeRembourseeNeDonnePlusAccesAuJeu
+  [OK]     testPanierVideNePeutPasEtreValide
+
+CompteTest
+  [OK]     testInscriptionHacheLeMotDePasse
+  [OK]     testInscriptionRefuseDoublonsEtMotDePasseFaible
+  [OK]     testInscriptionSansAccepterLesCguEstRefusee
+  [OK]     testConnexionReussieEtJournalisee
+  [OK]     testMauvaisMotDePasseEtCompteInconnuOntLeMemeMessage
+  [OK]     testCompteDesactiveNePeutPasSeConnecter
+  [OK]     testBlocageApresCinqEchecs
+  [OK]     testUnJoueurNePeutPasReleverLaCleDUnAutre
+  [OK]     testJetonApiValideExpireEtRevoque
+
+TicketTest
+  [OK]     testSignalementCreeUnTicketNouveauAvecHistorique
+  [OK]     testSignalementIncompletEstRefuse
+  [OK]     testUnJoueurNeVoitPasLeTicketDUnAutre
+  [OK]     testLeSupportVoitTousLesTicketsEtLesNotesInternes
+  [OK]     testReponseDuJoueurRelanceUnTicketEnAttente
+  [OK]     testPasDeReponseSurUnTicketClos
+  [OK]     testQualificationParLeSupportEstTracee
+  [OK]     testOnNePeutPasAffecterUnTicketAUnJoueur
+
+45 tests, 45 réussis, 0 échecs, 0 erreurs (19.45 s)
