@@ -1,0 +1,216 @@
+// Schéma de la base PixelWave — à coller sur https://dbdiagram.io
+// Généré depuis la base MariaDB créée par 01_creation.sql
+
+Table actualite {
+  id_actualite int(10) [pk, increment]
+  titre varchar(150) [not null]
+  slug varchar(170) [not null, unique]
+  chapo varchar(300) [not null]
+  contenu text [not null]
+  id_categorie tinyint(3) [not null]
+  id_auteur int(10) [not null]
+  id_produit int(10)
+  date_publication datetime
+  publiee tinyint(1) [not null]
+}
+
+Table categorie_actualite {
+  id_categorie tinyint(3) [pk, increment]
+  libelle varchar(50) [not null, unique]
+}
+
+Table cle_activation {
+  id_cle int(10) [pk, increment]
+  code varchar(29) [not null, unique]
+  id_produit int(10) [not null]
+  id_plateforme tinyint(3) [not null]
+  id_ligne int(10) [unique]
+  date_import datetime [not null]
+  date_attribution datetime
+  date_revelation datetime
+}
+
+Table commande {
+  id_commande int(10) [pk, increment]
+  reference varchar(20) [not null, unique]
+  id_utilisateur int(10) [not null]
+  date_commande datetime [not null]
+  statut varchar [not null]
+}
+
+Table genre {
+  id_genre smallint(5) [pk, increment]
+  libelle varchar(50) [not null, unique]
+}
+
+Table historique_ticket {
+  id_historique int(10) [pk, increment]
+  id_ticket int(10) [not null]
+  id_statut tinyint(3) [not null]
+  id_auteur int(10) [not null]
+  date_changement datetime [not null]
+  commentaire varchar(255)
+}
+
+Table jeton_api {
+  id_jeton int(10) [pk, increment]
+  id_utilisateur int(10) [not null]
+  jeton_hash char(64) [not null, unique]
+  libelle varchar(50) [not null]
+  date_creation datetime [not null]
+  date_expiration datetime [not null]
+  date_derniere_utilisation datetime
+  revoque tinyint(1) [not null]
+}
+
+Table ligne_commande {
+  id_ligne int(10) [pk, increment]
+  id_commande int(10) [not null]
+  id_produit int(10) [not null]
+  id_plateforme tinyint(3) [not null]
+  prix_unitaire decimal(6,2) [not null]
+}
+
+Table message_ticket {
+  id_message int(10) [pk, increment]
+  id_ticket int(10) [not null]
+  id_auteur int(10) [not null]
+  contenu text [not null]
+  interne tinyint(1) [not null]
+  date_envoi datetime [not null]
+}
+
+Table panier_ligne {
+  id_panier_ligne int(10) [pk, increment]
+  id_utilisateur int(10) [not null]
+  id_produit int(10) [not null]
+  id_plateforme tinyint(3) [not null]
+  date_ajout datetime [not null]
+}
+
+Table plateforme {
+  id_plateforme tinyint(3) [pk, increment]
+  code varchar(10) [not null, unique]
+  nom varchar(50) [not null]
+}
+
+Table priorite {
+  id_priorite tinyint(3) [pk, increment]
+  code varchar(20) [not null, unique]
+  libelle varchar(50) [not null]
+  niveau tinyint(3) [not null]
+}
+
+Table produit {
+  id_produit int(10) [pk, increment]
+  type varchar [not null]
+  titre varchar(100) [not null]
+  slug varchar(120) [not null, unique]
+  accroche varchar(255) [not null]
+  description text
+  prix decimal(6,2) [not null]
+  date_sortie date
+  id_genre smallint(5)
+  id_jeu_parent int(10)
+  visuel varchar(30) [not null]
+  actif tinyint(1) [not null]
+}
+
+Table produit_plateforme {
+  id_produit int(10)
+  id_plateforme tinyint(3)
+  indexes {
+    (id_produit, id_plateforme) [pk]
+  }
+}
+
+Table promotion {
+  id_promotion int(10) [pk, increment]
+  id_produit int(10) [not null]
+  pourcentage tinyint(3) [not null]
+  date_debut date [not null]
+  date_fin date [not null]
+}
+
+Table role {
+  id_role tinyint(3) [pk, increment]
+  code varchar(20) [not null, unique]
+  libelle varchar(50) [not null]
+}
+
+Table statut_ticket {
+  id_statut tinyint(3) [pk, increment]
+  code varchar(20) [not null, unique]
+  libelle varchar(50) [not null]
+  ordre tinyint(3) [not null]
+  est_final tinyint(1) [not null]
+}
+
+Table tentative_connexion {
+  id_tentative bigint(20) [pk, increment]
+  email varchar(255) [not null]
+  adresse_ip varchar(45) [not null]
+  date_tentative datetime [not null]
+  reussie tinyint(1) [not null]
+}
+
+Table ticket {
+  id_ticket int(10) [pk, increment]
+  reference varchar(20) [not null, unique]
+  id_auteur int(10) [not null]
+  id_produit int(10)
+  id_plateforme tinyint(3)
+  titre varchar(150) [not null]
+  description text [not null]
+  version_jeu varchar(20)
+  frequence varchar
+  id_statut tinyint(3) [not null]
+  id_priorite tinyint(3)
+  id_technicien int(10)
+  date_creation datetime [not null]
+  date_maj datetime [not null]
+}
+
+Table utilisateur {
+  id_utilisateur int(10) [pk, increment]
+  pseudo varchar(30) [not null, unique]
+  email varchar(255) [not null, unique]
+  mot_de_passe_hash varchar(255) [not null]
+  id_role tinyint(3) [not null]
+  newsletter tinyint(1) [not null]
+  actif tinyint(1) [not null]
+  date_inscription datetime [not null]
+  derniere_connexion datetime
+}
+
+Ref: actualite.id_auteur > utilisateur.id_utilisateur
+Ref: actualite.id_categorie > categorie_actualite.id_categorie
+Ref: actualite.id_produit > produit.id_produit
+Ref: cle_activation.id_ligne > ligne_commande.id_ligne
+Ref: cle_activation.id_produit > produit_plateforme.id_produit
+Ref: cle_activation.id_plateforme > produit_plateforme.id_plateforme
+Ref: commande.id_utilisateur > utilisateur.id_utilisateur
+Ref: historique_ticket.id_auteur > utilisateur.id_utilisateur
+Ref: historique_ticket.id_statut > statut_ticket.id_statut
+Ref: historique_ticket.id_ticket > ticket.id_ticket
+Ref: jeton_api.id_utilisateur > utilisateur.id_utilisateur
+Ref: ligne_commande.id_commande > commande.id_commande
+Ref: ligne_commande.id_produit > produit_plateforme.id_produit
+Ref: ligne_commande.id_plateforme > produit_plateforme.id_plateforme
+Ref: message_ticket.id_auteur > utilisateur.id_utilisateur
+Ref: message_ticket.id_ticket > ticket.id_ticket
+Ref: panier_ligne.id_produit > produit_plateforme.id_produit
+Ref: panier_ligne.id_plateforme > produit_plateforme.id_plateforme
+Ref: panier_ligne.id_utilisateur > utilisateur.id_utilisateur
+Ref: produit.id_genre > genre.id_genre
+Ref: produit.id_jeu_parent > produit.id_produit
+Ref: produit_plateforme.id_plateforme > plateforme.id_plateforme
+Ref: produit_plateforme.id_produit > produit.id_produit
+Ref: promotion.id_produit > produit.id_produit
+Ref: ticket.id_auteur > utilisateur.id_utilisateur
+Ref: ticket.id_plateforme > plateforme.id_plateforme
+Ref: ticket.id_priorite > priorite.id_priorite
+Ref: ticket.id_produit > produit.id_produit
+Ref: ticket.id_statut > statut_ticket.id_statut
+Ref: ticket.id_technicien > utilisateur.id_utilisateur
+Ref: utilisateur.id_role > role.id_role
