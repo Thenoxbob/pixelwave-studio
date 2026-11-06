@@ -30,15 +30,15 @@ $err = fn(string $nom) => View::partiel('partials/champ_erreur', ['erreurs' => $
 
     <section class="panneau" id="securite">
         <h2>Sécurité</h2>
-        <form method="post" action="/compte/mot-de-passe" class="formulaire" novalidate>
+        <form method="post" action="/compte/mot-de-passe" class="formulaire" novalidate data-valider>
             <?= Csrf::champ() ?>
             <label class="champ"><span class="champ__label">Mot de passe actuel</span>
                 <input type="password" name="actuel" autocomplete="current-password" required><?= $err('actuel') ?></label>
             <label class="champ"><span class="champ__label">Nouveau mot de passe</span>
-                <input type="password" name="nouveau" autocomplete="new-password" required>
+                <input type="password" name="nouveau" autocomplete="new-password" data-regle="mot-de-passe" required>
                 <span class="champ__aide">10 caractères minimum, dont une lettre, un chiffre et un caractère spécial.</span><?= $err('nouveau') ?></label>
             <label class="champ"><span class="champ__label">Confirmer</span>
-                <input type="password" name="confirmation" autocomplete="new-password" required><?= $err('confirmation') ?></label>
+                <input type="password" name="confirmation" autocomplete="new-password" data-confirme="nouveau" required><?= $err('confirmation') ?></label>
             <button class="btn btn--plein">Changer le mot de passe</button>
         </form>
     </section>

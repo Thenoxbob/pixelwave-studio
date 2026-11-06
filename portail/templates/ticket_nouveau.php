@@ -11,7 +11,7 @@ $val = fn(string $nom) => e($saisie[$nom] ?? '');
     <h1>Signaler un bug</h1>
     <p class="intro">Plus ta description est précise, plus vite l'équipe QA pourra reproduire et corriger le problème.</p>
     <?php if (!empty($erreurs['general'])): ?><div class="alerte alerte--erreur" role="alert"><?= e($erreurs['general']) ?></div><?php endif ?>
-    <form method="post" action="/support/nouveau" class="formulaire" novalidate>
+    <form method="post" action="/support/nouveau" class="formulaire" novalidate data-valider>
         <?= Csrf::champ() ?>
         <div class="formulaire__colonnes">
             <label class="champ">
@@ -36,7 +36,7 @@ $val = fn(string $nom) => e($saisie[$nom] ?? '');
             </label>
             <label class="champ">
                 <span class="champ__label">Version du jeu <small>(facultatif)</small></span>
-                <input name="version_jeu" value="<?= $val('version_jeu') ?>" maxlength="20" placeholder="ex. 1.4.0">
+                <input name="version_jeu" value="<?= $val('version_jeu') ?>" maxlength="20" pattern="[0-9A-Za-z.\-]+" data-message-motif="Format attendu : 1.4.0" placeholder="ex. 1.4.0">
                 <?= $err('version_jeu') ?>
             </label>
             <label class="champ">
@@ -52,12 +52,12 @@ $val = fn(string $nom) => e($saisie[$nom] ?? '');
         </div>
         <label class="champ">
             <span class="champ__label">Titre</span>
-            <input name="titre" value="<?= $val('titre') ?>" maxlength="150" placeholder="ex. Crash au chargement du circuit Port Néon" required>
+            <input name="titre" value="<?= $val('titre') ?>" minlength="5" maxlength="150" placeholder="ex. Crash au chargement du circuit Port Néon" required>
             <?= $err('titre') ?>
         </label>
         <label class="champ">
             <span class="champ__label">Description</span>
-            <textarea name="description" rows="7" maxlength="5000" required placeholder="Que faisais-tu ? Que s'est-il passé ? Qu'attendais-tu ?"><?= $val('description') ?></textarea>
+            <textarea name="description" rows="7" minlength="20" maxlength="5000" data-compteur required placeholder="Que faisais-tu ? Que s'est-il passé ? Qu'attendais-tu ?"><?= $val('description') ?></textarea>
             <span class="champ__aide">20 caractères minimum. N'indique jamais ton mot de passe ni tes coordonnées bancaires.</span>
             <?= $err('description') ?>
         </label>
