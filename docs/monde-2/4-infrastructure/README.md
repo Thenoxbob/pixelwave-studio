@@ -127,7 +127,7 @@ Sur **SRV-PORTAIL** :
 - les versions d'Apache et de PHP ne sont pas affichées (`ServerTokens Prod`, `expose_php Off`), et les erreurs PHP ne s'affichent pas à l'écran ;
 - Apache ne sert que le dossier `public/`, les fichiers cachés sont refusés, et `config.php` est en 640 (root:www-data) ;
 - le compte de base de données de l'appli n'a que les droits `SELECT`, `INSERT`, `UPDATE` et `DELETE` ;
-- côté application, les protections sont détaillées dans la [mission Développement](../2-developpement/README.md#4-sécurité).
+- côté application, les protections sont détaillées dans la [mission Développement](../2-developpement/L8_securite_code.md).
 
 Sur **SRV-INFRA** :
 
