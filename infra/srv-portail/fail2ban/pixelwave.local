@@ -1,0 +1,16 @@
+# /etc/fail2ban/jail.d/pixelwave.local
+[DEFAULT]
+bantime  = 1h
+findtime = 10m
+maxretry = 5
+# jamais de bannissement du VLAN d'administration
+ignoreip = 127.0.0.1/8 ::1 192.168.99.0/24
+
+[sshd]
+enabled = true
+backend = systemd
+
+[recidive]
+enabled  = true
+bantime  = 1w
+findtime = 1d

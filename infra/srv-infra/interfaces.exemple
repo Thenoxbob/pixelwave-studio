@@ -1,0 +1,11 @@
+# /etc/network/interfaces — SRV-INFRA (adresse fixe, VLAN 60)
+# À adapter (nom de l'interface : ip -br link) puis : systemctl restart networking
+auto lo
+iface lo inet loopback
+
+auto ens18
+iface ens18 inet static
+    address 192.168.60.11/24
+    gateway 192.168.60.1
+    dns-nameservers 127.0.0.1
+    dns-search pixelwave.lan

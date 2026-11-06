@@ -1,0 +1,8 @@
+; Zone inverse 192.168.99.0/24 (management) — /etc/bind/zones/db.192.168.99
+$TTL    3600
+@       IN  SOA ns1.pixelwave.lan. admin.pixelwave.lan. (
+                2026110601 3600 900 604800 300 )
+        IN  NS  ns1.pixelwave.lan.
+
+2       IN  PTR sw-coeur.pixelwave.lan.
+10      IN  PTR pve.pixelwave.lan.

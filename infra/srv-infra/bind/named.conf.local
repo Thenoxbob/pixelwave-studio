@@ -1,0 +1,26 @@
+// /etc/bind/named.conf.local — zones gérées par SRV-INFRA
+
+zone "pixelwave.lan" {
+    type master;
+    file "/etc/bind/zones/db.pixelwave.lan";
+};
+
+// zones inverses (adresse IP -> nom)
+zone "60.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/zones/db.192.168.60";
+};
+
+zone "70.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/zones/db.192.168.70";
+};
+
+zone "99.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/zones/db.192.168.99";
+};
+
+// Quand l'annuaire Active Directory sera installé (SRV-AD), le sous-domaine
+// ad.pixelwave.lan lui sera délégué :
+//   ad    IN NS  srv-ad.pixelwave.lan.

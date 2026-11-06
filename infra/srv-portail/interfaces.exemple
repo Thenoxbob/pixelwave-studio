@@ -1,0 +1,10 @@
+# /etc/network/interfaces — SRV-PORTAIL (adresse fixe, DMZ VLAN 70)
+# La DMZ ne peut pas joindre le DNS interne (isolement ASA) : résolveurs publics.
+auto lo
+iface lo inet loopback
+
+auto ens18
+iface ens18 inet static
+    address 192.168.70.11/24
+    gateway 192.168.70.1
+    dns-nameservers 1.1.1.1 9.9.9.9

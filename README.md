@@ -29,3 +29,16 @@ Le projet Figma contient une page par étape :
 ## Test utilisateur
 
 Les retours du test utilisateur (livrable 8) sont consignés dans [test_utilisateur.md](test_utilisateur.md).
+
+## Monde 2 · Construire, tester, héberger
+
+Vue d'ensemble : [docs/monde-2](docs/monde-2/README.md)
+
+| Mission | Documentation | Code / fichiers |
+|---|---|---|
+| Conception Backend | [8 livrables](docs/monde-2/1-conception-backend/README.md) : données, MCD/MLD, normalisation, SQL, API REST | [`database/`](database/), [`api/`](api/) (Postman) |
+| Développement | [portail joueurs](docs/monde-2/2-developpement/README.md) : architecture, sécurité, captures | [`portail/`](portail/) |
+| Mise en place des tests | [stratégie, cahier de recette, anomalies, PV](docs/monde-2/3-tests/README.md) | [`portail/tests/`](portail/tests/) |
+| Mise en place de l'infrastructure | [documentation technique](docs/monde-2/4-infrastructure/README.md) : Debian, Apache, MariaDB, BIND9, DHCP, ufw | [`infra/`](infra/) |
+
+Lancer le portail en local : voir [`portail/README.md`](portail/README.md).

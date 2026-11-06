@@ -1,0 +1,33 @@
+; Zone pixelwave.lan — /etc/bind/zones/db.pixelwave.lan
+; Incrémenter le numéro de série (AAAAMMJJnn) à chaque modification.
+$TTL    3600
+@       IN  SOA ns1.pixelwave.lan. admin.pixelwave.lan. (
+                2026110601  ; série
+                3600        ; rafraîchissement
+                900         ; nouvelle tentative
+                604800      ; expiration
+                300 )       ; TTL négatif
+        IN  NS  ns1.pixelwave.lan.
+
+; --- VLAN 60 : serveurs internes ------------------------------------------
+ns1             IN  A   192.168.60.11
+srv-infra       IN  A   192.168.60.11   ; DNS (BIND9) + DHCP (Kea)
+srv-ad          IN  A   192.168.60.10   ; annuaire (prévu)
+srv-glpi        IN  A   192.168.60.12   ; gestion des tickets internes (prévu)
+srv-fichiers    IN  A   192.168.60.13   ; partage de fichiers (prévu)
+srv-supervision IN  A   192.168.60.14   ; supervision (prévu)
+srv-sauvegarde  IN  A   192.168.60.15   ; sauvegardes (prévu)
+
+; --- VLAN 70 : DMZ (services exposés sur Internet) ---------------------------
+srv-web         IN  A   192.168.70.10   ; site vitrine
+srv-portail     IN  A   192.168.70.11   ; portail joueurs
+asa-dmz         IN  A   192.168.70.1
+
+; --- VLAN 99 : administration des équipements ---------------------------------
+sw-coeur        IN  A   192.168.99.2
+pve             IN  A   192.168.99.10   ; hyperviseur Proxmox VE
+
+; --- Alias de service ------------------------------------------------------
+portail         IN  CNAME srv-portail
+www             IN  CNAME srv-web
+glpi            IN  CNAME srv-glpi

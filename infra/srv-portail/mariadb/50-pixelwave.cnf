@@ -1,0 +1,11 @@
+# /etc/mysql/mariadb.conf.d/50-pixelwave.cnf
+[mysqld]
+# la base n'est joignable que depuis le serveur lui-même (aucun accès réseau)
+bind-address            = 127.0.0.1
+skip-name-resolve
+character-set-server    = utf8mb4
+collation-server        = utf8mb4_unicode_ci
+# journal des requêtes lentes pour la supervision
+slow_query_log          = 1
+slow_query_log_file     = /var/log/mysql/mariadb-lent.log
+long_query_time         = 1

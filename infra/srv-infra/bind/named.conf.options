@@ -1,0 +1,33 @@
+// /etc/bind/named.conf.options — SRV-INFRA (192.168.60.11)
+// Résolveur interne : il répond aux VLAN internes uniquement.
+// Le VLAN 80 (Wi-Fi invités) n'est pas autorisé : il utilise un DNS public.
+
+acl "interne" {
+    127.0.0.1;
+    192.168.10.0/24;    // Direction
+    192.168.20.0/24;    // Développement
+    192.168.30.0/24;    // Marketing
+    192.168.40.0/24;    // Support / QA
+    192.168.50.0/24;    // Administration
+    192.168.60.0/24;    // Serveurs
+    192.168.99.0/24;    // Management
+};
+
+options {
+    directory "/var/cache/bind";
+
+    listen-on { 127.0.0.1; 192.168.60.11; };
+    listen-on-v6 { none; };
+
+    allow-query     { interne; };
+    allow-recursion { interne; };
+    allow-transfer  { none; };          // pas de transfert de zone (pas de DNS secondaire pour l'instant)
+
+    // les noms Internet sont résolus via des résolveurs publics
+    forwarders { 1.1.1.1; 9.9.9.9; };
+    forward first;
+
+    dnssec-validation auto;
+    version "non communiquée";          // ne pas divulguer la version de BIND
+    minimal-responses yes;
+};
