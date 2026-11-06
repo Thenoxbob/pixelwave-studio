@@ -1,0 +1,10 @@
+# Toutes les URL qui ne sont pas des fichiers existants passent par index.php
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # transmet l'en-tête Authorization (jetons API) à PHP
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+Options -Indexes

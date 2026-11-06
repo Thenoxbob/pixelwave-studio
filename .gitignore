@@ -1,0 +1,20 @@
+# Secrets : configurations locales du portail et des tests
+portail/config/config.php
+portail/tests/config.test.php
+portail/tests/config.recette.php
+
+# Fichiers générés
+portail/tests/api/resultats.md
+portail/storage/logs/*
+!portail/storage/logs/.gitkeep
+portail/vendor/
+portail/.phpunit.cache/
+portail/composer.lock
+
+# Système / éditeurs
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+~$*
