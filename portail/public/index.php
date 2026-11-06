@@ -8,7 +8,7 @@ if (PHP_SAPI === 'cli-server' && is_file(__DIR__ . parse_url($_SERVER['REQUEST_U
     return false;
 }
 
-require dirname(__DIR__) . '/src/bootstrap.php';
+require_once dirname(__DIR__) . '/src/bootstrap.php';
 
 use Pixelwave\Controller\ApiController;
 use Pixelwave\Controller\SiteController;
