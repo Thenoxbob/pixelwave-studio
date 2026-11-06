@@ -230,6 +230,8 @@ textarea { resize: vertical; }
 .bloc-cle__code { font-size: 1.05rem; letter-spacing: .06em; color: var(--teal); align-self: center; }
 .bloc-cle .btn, .bloc-cle__form { align-self: center; }
 .bloc-cle__form { margin: 0; }
+.bloc-cle__erreur { grid-column: 1 / -1; margin: .5rem 0 0; color: var(--rouge); font-size: .85rem; }
+.bloc-cle[aria-busy="true"] { opacity: .7; }
 
 /* ---------- Compte ---------- */
 .compte { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }

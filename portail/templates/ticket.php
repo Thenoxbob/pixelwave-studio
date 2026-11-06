@@ -35,11 +35,11 @@ $clos = $ticket['statut'] === 'clos';
         </section>
 
         <?php if (!$clos): ?>
-            <form method="post" action="/support/<?= e($ticket['reference']) ?>/messages" class="formulaire panneau" novalidate>
+            <form method="post" action="/support/<?= e($ticket['reference']) ?>/messages" class="formulaire panneau" novalidate data-valider>
                 <?= Csrf::champ() ?>
                 <label class="champ">
                     <span class="champ__label"><?= $staff ? 'Répondre au joueur' : 'Ajouter un message' ?></span>
-                    <textarea name="contenu" rows="4" maxlength="5000" required></textarea>
+                    <textarea name="contenu" rows="4" minlength="2" maxlength="5000" required></textarea>
                     <?= $err('contenu') ?>
                 </label>
                 <?php if ($staff): ?>
